@@ -16,27 +16,28 @@ WebTestResult.displayName = 'WebTestResult';
   function addSkip(testcase, msg) {
     _super.addSkip.call(this, testcase, msg);
     this.updateResults();
-    this.setProgressBarStatus(Logger.WARN);
+    this.setLevel(Logger.WARN);
     this.updateStatus('Skipping testcase ' + testcase + ': ' + msg.message);
   }
   
   function addFailure(testcase, msg) {
     _super.addFailure.call(this, testcase, msg);
     this.updateResults();
-    this.setProgressBarStatus(Logger.ERROR);
+    this.setLevel(Logger.ERROR);
     this.updateStatus(testcase + ': ' + msg.message + ' ' + msg.template, msg.args);
   }
   
   function addError(testcase, error) {
     _super.addError.call(this, testcase, error);
     this.updateResults();
-    this.setProgressBarStatus(Logger.ERROR);
+    this.setLevel(Logger.ERROR);
     this.updateStatus(testcase + ' threw an error. ' + error);
   }
   
   function startTest(testcase) {
     _super.startTest.call(this, testcase);
     this.updateStatus('Started testcase ' + testcase + '.');
+    this.gui.addListElement(testcase);
   }
   
   function stopTest(testcase) {
@@ -56,6 +57,7 @@ WebTestResult.displayName = 'WebTestResult';
     if (!this.size) {
       this.size = suite.size();
     }
+    this.gui.addList(suite);
     this.updateStatus('Started suite ' + suite + '.');
   }
   
@@ -83,18 +85,19 @@ WebTestResult.displayName = 'WebTestResult';
     this.gui.status.update(txt);
   }
   
-  function updateProgressBar(status) {
+  function updateProgressBar() {
     this.gui.progressBar.update(this.testCount/this.size);
   }
   
-  function setProgressBarStatus(status) {
-    this.gui.progressBar.setStatus(status);
+  function setLevel(level) {
+    this.gui.progressBar.setLevel(level);
+    this.gui.testcase.setLevel(level);
   }
   
   p.updateResults = updateResults;
   p.updateStatus  = updateStatus;
   p.updateProgressBar = updateProgressBar;
-  p.setProgressBarStatus = setProgressBarStatus;
+  p.setLevel      = setLevel;
   p.addAssertion  = addAssertion;
   p.addSkip       = addSkip;
   p.addFailure    = addFailure;

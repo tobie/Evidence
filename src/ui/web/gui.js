@@ -5,11 +5,9 @@ function WebGUI(doc) {
 WebGUI.displayName = 'WebGUI';
 
 (function(p) {
-  var PREFIX = 'evidence';
-
   function build() {
     this.element = this.doc.createElement('div');
-    this.element.id = PREFIX;
+    this.element.id = 'evidence';
     new WebDisplay('User agent string', global.navigator.userAgent).build().appendTo(this.element)
     this.status = new WebDisplay('Status', 'Idle.').build().appendTo(this.element)
     this.progressBar = new ProgressBar(300).build().appendTo(this.element)
@@ -22,10 +20,17 @@ WebGUI.displayName = 'WebGUI';
     return this;
   }
   
-  function addLi(testname, failure) {
-    
+  function addListElement(testcase) {
+    this.testcase = new ListElement(testcase.name).build();
+    this.suite.appendChild(this.testcase);
   }
   
+  function addList(suite) {
+    this.suite = new List(suite.name).build().appendTo(this.element);
+  }
+  
+  p.addListElement = addListElement;
+  p.addList = addList;
   p.build = build;
   p.appendTo = appendTo;
 })(WebGUI.prototype);

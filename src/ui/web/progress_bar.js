@@ -39,7 +39,7 @@ ProgressBar.displayName = 'ProgressBar';
     return this;
   }
   
-  function setStatus(level) {
+  function setLevel(level) {
     if (level > this.level) {
       this.level = level;
       this.progressBar.className = (Logger.LEVELS[level] || '').toLowerCase();
@@ -51,6 +51,6 @@ ProgressBar.displayName = 'ProgressBar';
   p.createDiv = createDiv;
   p.appendDiv = appendDiv;
   p.update = update;
-  p.setStatus = setStatus;
+  p.setLevel = setLevel;
   p.appendTo = appendTo;
 })(ProgressBar.prototype);

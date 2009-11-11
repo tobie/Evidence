@@ -39,7 +39,10 @@ function TestCase(methodName) {
 
 (function(p) {
   function run(result) {
-    if (result) { this._result = result; }
+    this._result = result;
+    defer(this._run, this);
+  }
+  function _run() {
     try {
       if (this._nextAssertions) {
         this._result.restartTest(this);
@@ -63,9 +66,7 @@ function TestCase(methodName) {
         } finally {
           this._nextAssertions = null;
           this._result.stopTest(this);
-          defer(function() {
-            this.parent.next();
-          }, this);
+          this.parent.next();
         }
       }
     }
@@ -102,7 +103,7 @@ function TestCase(methodName) {
       this._paused = false;
       global.clearTimeout(this._timeoutId);
       if (assertions) { this._nextAssertions = assertions; }
-      this.run();
+      this._run();
     }
   }
   
@@ -119,6 +120,7 @@ function TestCase(methodName) {
   }
   
   p.run              = run;
+  p._run             = _run;
   p.addAssertion     = addAssertion;
   p._filterException = _filterException;
   p.pause            = pause;

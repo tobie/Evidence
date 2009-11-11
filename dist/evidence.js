@@ -292,7 +292,10 @@ function TestCase(methodName) {
 
 (function(p) {
   function run(result) {
-    if (result) { this._result = result; }
+    this._result = result;
+    defer(this._run, this);
+  }
+  function _run() {
     try {
       if (this._nextAssertions) {
         this._result.restartTest(this);
@@ -316,9 +319,7 @@ function TestCase(methodName) {
         } finally {
           this._nextAssertions = null;
           this._result.stopTest(this);
-          defer(function() {
-            this.parent.next();
-          }, this);
+          this.parent.next();
         }
       }
     }
@@ -354,7 +355,7 @@ function TestCase(methodName) {
       this._paused = false;
       global.clearTimeout(this._timeoutId);
       if (assertions) { this._nextAssertions = assertions; }
-      this.run();
+      this._run();
     }
   }
 
@@ -371,6 +372,7 @@ function TestCase(methodName) {
   }
 
   p.run              = run;
+  p._run             = _run;
   p.addAssertion     = addAssertion;
   p._filterException = _filterException;
   p.pause            = pause;
@@ -1035,27 +1037,28 @@ WebTestResult.displayName = 'WebTestResult';
   function addSkip(testcase, msg) {
     _super.addSkip.call(this, testcase, msg);
     this.updateResults();
-    this.setProgressBarStatus(Logger.WARN);
+    this.setLevel(Logger.WARN);
     this.updateStatus('Skipping testcase ' + testcase + ': ' + msg.message);
   }
 
   function addFailure(testcase, msg) {
     _super.addFailure.call(this, testcase, msg);
     this.updateResults();
-    this.setProgressBarStatus(Logger.ERROR);
+    this.setLevel(Logger.ERROR);
     this.updateStatus(testcase + ': ' + msg.message + ' ' + msg.template, msg.args);
   }
 
   function addError(testcase, error) {
     _super.addError.call(this, testcase, error);
     this.updateResults();
-    this.setProgressBarStatus(Logger.ERROR);
+    this.setLevel(Logger.ERROR);
     this.updateStatus(testcase + ' threw an error. ' + error);
   }
 
   function startTest(testcase) {
     _super.startTest.call(this, testcase);
     this.updateStatus('Started testcase ' + testcase + '.');
+    this.gui.addListElement(testcase);
   }
 
   function stopTest(testcase) {
@@ -1075,6 +1078,7 @@ WebTestResult.displayName = 'WebTestResult';
     if (!this.size) {
       this.size = suite.size();
     }
+    this.gui.addList(suite);
     this.updateStatus('Started suite ' + suite + '.');
   }
 
@@ -1102,18 +1106,19 @@ WebTestResult.displayName = 'WebTestResult';
     this.gui.status.update(txt);
   }
 
-  function updateProgressBar(status) {
+  function updateProgressBar() {
     this.gui.progressBar.update(this.testCount/this.size);
   }
 
-  function setProgressBarStatus(status) {
-    this.gui.progressBar.setStatus(status);
+  function setLevel(level) {
+    this.gui.progressBar.setLevel(level);
+    this.gui.testcase.setLevel(level);
   }
 
   p.updateResults = updateResults;
   p.updateStatus  = updateStatus;
   p.updateProgressBar = updateProgressBar;
-  p.setProgressBarStatus = setProgressBarStatus;
+  p.setLevel      = setLevel;
   p.addAssertion  = addAssertion;
   p.addSkip       = addSkip;
   p.addFailure    = addFailure;
@@ -1137,11 +1142,9 @@ function WebGUI(doc) {
 WebGUI.displayName = 'WebGUI';
 
 (function(p) {
-  var PREFIX = 'evidence';
-
   function build() {
     this.element = this.doc.createElement('div');
-    this.element.id = PREFIX;
+    this.element.id = 'evidence';
     new WebDisplay('User agent string', global.navigator.userAgent).build().appendTo(this.element)
     this.status = new WebDisplay('Status', 'Idle.').build().appendTo(this.element)
     this.progressBar = new ProgressBar(300).build().appendTo(this.element)
@@ -1154,14 +1157,24 @@ WebGUI.displayName = 'WebGUI';
     return this;
   }
 
+  function addListElement(testcase) {
+    this.testcase = new ListElement(testcase.name).build();
+    this.suite.appendChild(this.testcase);
+  }
+
+  function addList(suite) {
+    this.suite = new List(suite.name).build().appendTo(this.element);
+  }
+
+  p.addListElement = addListElement;
+  p.addList = addList;
   p.build = build;
   p.appendTo = appendTo;
 })(WebGUI.prototype);
 Web.GUI = WebGUI;
 function WebDisplay(label, content, doc) {
-  this.labelText = label;
-  this.contentText = content
-  this.id = 'evidence_' + label.replace(/\s/g, '_').toLowerCase();
+  this.label = label;
+  this.content = content
   this.doc = doc || document;
 }
 
@@ -1170,25 +1183,8 @@ WebDisplay.displayName = 'WebDisplay';
 (function(p) {
   function build() {
     this.element = this.doc.createElement('p');
-    this.label = this.appendElement('strong', this.labelText + ':');
-    var space = this.doc.createTextNode(' ');
-    this.element.appendChild(space)
-    this.content = this.appendElement('span', this.contentText);
-    this.content.id = this.id;
+    this.update(this.content);
     return this;
-  }
-
-  function createElement(tagName, content) {
-    var element = this.doc.createElement(tagName);
-    content = this.doc.createTextNode(content || '');
-    element.appendChild(content);
-    return element;
-  }
-
-  function appendElement(tagName, content) {
-    var element = this.createElement(tagName, content);
-    this.element.appendChild(element);
-    return element;
   }
 
   function appendTo(container) {
@@ -1197,19 +1193,19 @@ WebDisplay.displayName = 'WebDisplay';
   }
 
   function update(content) {
-    this.content.removeChild(this.content.firstChild);
-    content = this.doc.createTextNode(content);
-    this.content.appendChild(content);
+    content = content.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+    content = TEMPLATE.replace('{{ label }}', this.label).replace('{{ content }}', content);
+    this.element.innerHTML = content;
     return this;
   }
 
+  var TEMPLATE =  '<strong>{{ label }}:</strong> {{ content }}';
+
   p.build = build;
-  p.createElement = createElement;
-  p.appendElement = appendElement;
   p.update = update;
   p.appendTo = appendTo;
 })(WebDisplay.prototype);
-Web.Display = WebDisplay
+Web.Display = WebDisplay;
 function ProgressBar(width, doc) {
   this.width = width;
   this.level = 0;
@@ -1251,7 +1247,7 @@ ProgressBar.displayName = 'ProgressBar';
     return this;
   }
 
-  function setStatus(level) {
+  function setLevel(level) {
     if (level > this.level) {
       this.level = level;
       this.progressBar.className = (Logger.LEVELS[level] || '').toLowerCase();
@@ -1263,10 +1259,102 @@ ProgressBar.displayName = 'ProgressBar';
   p.createDiv = createDiv;
   p.appendDiv = appendDiv;
   p.update = update;
-  p.setStatus = setStatus;
+  p.setLevel = setLevel;
   p.appendTo = appendTo;
 })(ProgressBar.prototype);
-Web.ProgressBar = ProgressBar
+Web.ProgressBar = ProgressBar;
+function ListElement(name, doc) {
+  this.name = name;
+  this.doc = doc || document;
+  this.level = 0;
+}
+
+ListElement.displayName = 'ListElement';
+
+(function(p) {
+
+  function build() {
+    this.element = this.doc.createElement('li');
+    var name = this.name.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+    this.element.innerHTML = TEMPLATE.replace('{{ name }}', name);
+    return this;
+  }
+
+  function appendTo(container) {
+    container.appendChild(this.element);
+    return this;
+  }
+
+  function setLevel(level) {
+    if (level > this.level) {
+      this.element.className = (Logger.LEVELS[level] || '').toLowerCase();;
+      this.level = level;
+      if (level > Logger.WARN) {
+        this.element.firstChild.firstChild.checked = true;
+      }
+    }
+    this.parent.setLevel(level);
+  }
+
+  var TEMPLATE = '<label><input type="checkbox" /> {{ name }}</label>';
+
+  p.build = build;
+  p.setLevel = setLevel;
+  p.appendTo = appendTo;
+})(ListElement.prototype);
+Web.ListElement = ListElement;
+function List(name, doc) {
+  this.name = name;
+  this.doc = doc || document;
+  this.level = 0;
+}
+
+List.displayName = 'List';
+
+(function(p) {
+
+  function build() {
+    this.element = this.doc.createElement('div');
+    var name = this.name.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+    this.element.innerHTML = TEMPLATE.replace('{{ name }}', name);
+    return this;
+  }
+
+  function appendTo(container) {
+    container.appendChild(this.element);
+    return this;
+  }
+
+  function appendChild(child) {
+    this.children = this.children || [];
+    this.children.push(child);
+    child.parent = this;
+    this.element.lastChild.appendChild(child.element);
+    return this;
+  }
+
+  function setLevel(level) {
+    if (level > this.level) {
+      this.element.className = (Logger.LEVELS[level] || '').toLowerCase();;
+      this.element.lastChild.style.display = '';
+      this.level = level;
+      if (level > Logger.WARN) {
+        this.element.firstChild.firstChild.firstChild.checked = true;
+      }
+      if (this.parent) {
+        this.parent.setLevel(level);
+      }
+    }
+  }
+
+  var TEMPLATE = '<h3><label><input type="checkbox" /> {{ name }}</label></h3><ul style="display: none;"></ul>';
+
+  p.build = build;
+  p.setLevel = setLevel;
+  p.appendTo = appendTo;
+  p.appendChild = appendChild;
+})(List.prototype);
+Web.List = List;
 var UI = (function() {
   function printf(template, args, inspector) {
     var parts = [],
