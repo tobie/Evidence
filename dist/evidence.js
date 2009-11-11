@@ -1315,6 +1315,7 @@ List.displayName = 'List';
 
   function build() {
     this.element = this.doc.createElement('div');
+    this.element.className = 'suite';
     var name = this.name.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
     this.element.innerHTML = TEMPLATE.replace('{{ name }}', name);
     return this;
@@ -1335,7 +1336,7 @@ List.displayName = 'List';
 
   function setLevel(level) {
     if (level > this.level) {
-      this.element.className = (Logger.LEVELS[level] || '').toLowerCase();;
+      this.element.className = 'suite ' + (Logger.LEVELS[level] || '').toLowerCase();;
       this.element.lastChild.style.display = '';
       this.level = level;
       if (level > Logger.WARN) {
