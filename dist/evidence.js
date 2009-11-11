@@ -999,6 +999,274 @@ ConsoleTestResult.displayName = 'ConsoleTestResult';
 
 
 Console.TestResult = ConsoleTestResult;
+var Web = {};
+
+function WebTestRunner(logger) {
+  TestRunner.call(this);
+  this.logger = logger;
+}
+
+chain(WebTestRunner, TestRunner);
+WebTestRunner.displayName = 'WebTestRunner';
+
+(function(p) {
+  function _makeResult() {
+    return new WebTestResult();
+  }
+
+  p._makeResult = _makeResult;
+})(WebTestRunner.prototype);
+Web.TestRunner = WebTestRunner;
+function WebTestResult() {
+  TestResult.call(this);
+}
+
+chain(WebTestResult, TestResult);
+WebTestResult.displayName = 'WebTestResult';
+
+(function(p) {
+  var _super = TestResult.prototype;
+
+  function addAssertion() {
+    this.assertionCount++;
+    this.updateResults();
+  }
+
+  function addSkip(testcase, msg) {
+    _super.addSkip.call(this, testcase, msg);
+    this.updateResults();
+    this.setProgressBarStatus(Logger.WARN);
+    this.updateStatus('Skipping testcase ' + testcase + ': ' + msg.message);
+  }
+
+  function addFailure(testcase, msg) {
+    _super.addFailure.call(this, testcase, msg);
+    this.updateResults();
+    this.setProgressBarStatus(Logger.ERROR);
+    this.updateStatus(testcase + ': ' + msg.message + ' ' + msg.template, msg.args);
+  }
+
+  function addError(testcase, error) {
+    _super.addError.call(this, testcase, error);
+    this.updateResults();
+    this.setProgressBarStatus(Logger.ERROR);
+    this.updateStatus(testcase + ' threw an error. ' + error);
+  }
+
+  function startTest(testcase) {
+    _super.startTest.call(this, testcase);
+    this.updateStatus('Started testcase ' + testcase + '.');
+  }
+
+  function stopTest(testcase) {
+    this.updateProgressBar();
+    this.updateStatus('Completed testcase ' + testcase + '.');
+  }
+
+  function pauseTest(testcase) {
+    this.updateStatus('Paused testcase ' + testcase + '...');
+  }
+
+  function restartTest(testcase) {
+    this.updateStatus('Restarted testcase ' + testcase + '.');
+  }
+
+  function startSuite(suite) {
+    if (!this.size) {
+      this.size = suite.size();
+    }
+    this.updateStatus('Started suite ' + suite + '.');
+  }
+
+  function stopSuite(suite) {
+    this.updateStatus('Completed suite ' + suite + '.');
+  }
+
+  function start(t0) {
+    _super.start.call(this, t0);
+    this.gui = new WebGUI(document);
+    this.gui.build().appendTo(document.body);
+    this.updateResults();
+  }
+
+  function stop(t1) {
+    _super.stop.call(this, t1);
+    this.updateStatus('Completed tests in ' + ((t1 - this.t0)/1000) + 's.');
+  }
+
+  function updateResults() {
+    this.gui.results.update(this + '.');
+  }
+
+  function updateStatus(txt) {
+    this.gui.status.update(txt);
+  }
+
+  function updateProgressBar(status) {
+    this.gui.progressBar.update(this.testCount/this.size);
+  }
+
+  function setProgressBarStatus(status) {
+    this.gui.progressBar.setStatus(status);
+  }
+
+  p.updateResults = updateResults;
+  p.updateStatus  = updateStatus;
+  p.updateProgressBar = updateProgressBar;
+  p.setProgressBarStatus = setProgressBarStatus;
+  p.addAssertion  = addAssertion;
+  p.addSkip       = addSkip;
+  p.addFailure    = addFailure;
+  p.addError      = addError;
+  p.startTest     = startTest;
+  p.stopTest      = stopTest;
+  p.pauseTest     = pauseTest;
+  p.restartTest   = restartTest;
+  p.startSuite    = startSuite;
+  p.stopSuite     = stopSuite;
+  p.start         = start;
+  p.stop          = stop;
+})(WebTestResult.prototype);
+
+
+Web.TestResult = WebTestResult;
+function WebGUI(doc) {
+  this.doc = doc || document;
+}
+
+WebGUI.displayName = 'WebGUI';
+
+(function(p) {
+  var PREFIX = 'evidence';
+
+  function build() {
+    this.element = this.doc.createElement('div');
+    this.element.id = PREFIX;
+    new WebDisplay('User agent string', global.navigator.userAgent).build().appendTo(this.element)
+    this.status = new WebDisplay('Status', 'Idle.').build().appendTo(this.element)
+    this.progressBar = new ProgressBar(300).build().appendTo(this.element)
+    this.results = new WebDisplay('Results', '').build().appendTo(this.element)
+    return this;
+  }
+
+  function appendTo(container) {
+    container.appendChild(this.element);
+    return this;
+  }
+
+  p.build = build;
+  p.appendTo = appendTo;
+})(WebGUI.prototype);
+Web.GUI = WebGUI;
+function WebDisplay(label, content, doc) {
+  this.labelText = label;
+  this.contentText = content
+  this.id = 'evidence_' + label.replace(/\s/g, '_').toLowerCase();
+  this.doc = doc || document;
+}
+
+WebDisplay.displayName = 'WebDisplay';
+
+(function(p) {
+  function build() {
+    this.element = this.doc.createElement('p');
+    this.label = this.appendElement('strong', this.labelText + ':');
+    var space = this.doc.createTextNode(' ');
+    this.element.appendChild(space)
+    this.content = this.appendElement('span', this.contentText);
+    this.content.id = this.id;
+    return this;
+  }
+
+  function createElement(tagName, content) {
+    var element = this.doc.createElement(tagName);
+    content = this.doc.createTextNode(content || '');
+    element.appendChild(content);
+    return element;
+  }
+
+  function appendElement(tagName, content) {
+    var element = this.createElement(tagName, content);
+    this.element.appendChild(element);
+    return element;
+  }
+
+  function appendTo(container) {
+    container.appendChild(this.element);
+    return this;
+  }
+
+  function update(content) {
+    this.content.removeChild(this.content.firstChild);
+    content = this.doc.createTextNode(content);
+    this.content.appendChild(content);
+    return this;
+  }
+
+  p.build = build;
+  p.createElement = createElement;
+  p.appendElement = appendElement;
+  p.update = update;
+  p.appendTo = appendTo;
+})(WebDisplay.prototype);
+Web.Display = WebDisplay
+function ProgressBar(width, doc) {
+  this.width = width;
+  this.level = 0;
+  this.doc = doc || document;
+}
+
+ProgressBar.displayName = 'ProgressBar';
+
+(function(p) {
+  function build() {
+    this.element = this.createDiv(this.width);
+    this.element.id = 'evidence_progress_bar_container';
+    this.progressBar = this.createDiv(0);
+    this.progressBar.id = 'evidence_progress_bar';
+    this.element.appendChild(this.progressBar);
+    return this;
+  }
+
+  function createDiv(width) {
+    var element = this.doc.createElement('div');
+    element.style.width = width + 'px';
+    return element;
+  }
+
+  function appendDiv(width) {
+    var element = this.createDiv(width);
+    this.element.appendChild(element);
+    return element;
+  }
+
+  function appendTo(container) {
+    container.appendChild(this.element);
+    return this;
+  }
+
+  function update(ratio) {
+    var value = Math.floor(ratio * this.width);
+    this.progressBar.style.width = value + 'px';
+    return this;
+  }
+
+  function setStatus(level) {
+    if (level > this.level) {
+      this.level = level;
+      this.progressBar.className = (Logger.LEVELS[level] || '').toLowerCase();
+    }
+    return this;
+  }
+
+  p.build = build;
+  p.createDiv = createDiv;
+  p.appendDiv = appendDiv;
+  p.update = update;
+  p.setStatus = setStatus;
+  p.appendTo = appendTo;
+})(ProgressBar.prototype);
+Web.ProgressBar = ProgressBar
 var UI = (function() {
   function printf(template, args, inspector) {
     var parts = [],
@@ -1031,7 +1299,8 @@ var UI = (function() {
 
    return {
      printf: printf,
-     Console: Console
+     Console: Console,
+     Web: Web
    };
 })();
   Evidence.UI = UI;

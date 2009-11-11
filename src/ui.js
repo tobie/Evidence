@@ -1,4 +1,5 @@
 //= require "ui/console"
+//= require "ui/web"
 var UI = (function() {
   function printf(template, args, inspector) {
     var parts = [],
@@ -31,6 +32,7 @@ var UI = (function() {
   
    return {
      printf: printf,
-     Console: Console
+     Console: Console,
+     Web: Web
    };
 })();
