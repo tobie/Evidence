@@ -47,6 +47,8 @@
   Evidence.AutoRunner = AutoRunner;
   //= require "test_result"
   Evidence.TestResult = TestResult;
+  //= require "test_result_tree"
+  Evidence.TestResultTree = TestResultTree;
   //= require "ui"
   Evidence.UI = UI;
 
