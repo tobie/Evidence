@@ -14,9 +14,9 @@ function chain(subclass, superclass) {
 
 function defer(block, context) {
   if ('setTimeout' in global) {
-    window.setTimeout(function() { 
+    global.setTimeout(function() { 
       block.call(context);
-    }, 10);
+    }, 0);
   } else {
     block.call(context);
   }
