@@ -1,103 +1,86 @@
-function WebTestResult() {
-  TestResult.call(this);
+function WebTestResult(name) {
+  TestResultTree.call(this, name);
 }
 
-chain(WebTestResult, TestResult);
+chain(WebTestResult, TestResultTree);
 WebTestResult.displayName = 'WebTestResult';
 
 (function(p) {
-  var _super = TestResult.prototype;
+  var _super = TestResultTree.prototype;
   
   function addAssertion() {
-    this.assertionCount++;
-    this.updateResults();
+    _super.addAssertion.call(this);
+    this.gui.updateResults(this);
   }
   
   function addSkip(testcase, msg) {
     _super.addSkip.call(this, testcase, msg);
-    this.updateResults();
-    this.setLevel(Logger.WARN);
-    this.updateStatus('Skipping testcase ' + testcase + ': ' + msg.message);
+    var gui = this.gui;
+    gui.updateResults(this);
+    gui.setLevel(Logger.WARN);
+    gui.updateStatus('Skipping testcase ' + testcase + ': ' + msg.message);
   }
   
   function addFailure(testcase, msg) {
     _super.addFailure.call(this, testcase, msg);
-    this.updateResults();
-    this.setLevel(Logger.ERROR);
-    this.updateStatus(testcase + ': ' + msg.message + ' ' + msg.template, msg.args);
+    var gui = this.gui;
+    gui.updateResults(this);
+    gui.setLevel(Logger.ERROR);
+    gui.updateStatus(testcase + ': ' + msg.message + ' ' + msg.template, msg.args);
   }
   
   function addError(testcase, error) {
     _super.addError.call(this, testcase, error);
-    this.updateResults();
-    this.setLevel(Logger.ERROR);
-    this.updateStatus(testcase + ' threw an error. ' + error);
+    var gui = this.gui;
+    gui.updateResults(this);
+    gui.setLevel(Logger.ERROR);
+    gui.updateStatus(testcase + ' threw an error. ' + error);
   }
   
   function startTest(testcase) {
     _super.startTest.call(this, testcase);
-    this.updateStatus('Started testcase ' + testcase + '.');
-    this.gui.addListElement(testcase);
+    this.gui.updateStatus('Started testcase ' + testcase);
   }
   
   function stopTest(testcase) {
-    this.updateProgressBar();
-    this.updateStatus('Completed testcase ' + testcase + '.');
+    _super.stopTest.call(this, testcase);
+    var gui = this.gui;
+    gui.updateProgressBar(this.testCount / this.size);
+    gui.updateStatus('Completed testcase ' + testcase);
   }
   
   function pauseTest(testcase) {
-    this.updateStatus('Paused testcase ' + testcase + '...');
+    this.gui.updateStatus('Paused testcase ' + testcase + '...');
   }
   
   function restartTest(testcase) {
-    this.updateStatus('Restarted testcase ' + testcase + '.');
+    this.gui.updateStatus('Restarted testcase ' + testcase);
   }
   
   function startSuite(suite) {
-    if (!this.size) {
-      this.size = suite.size();
-    }
-    this.gui.addList(suite);
-    this.updateStatus('Started suite ' + suite + '.');
+    _super.startSuite.call(this, suite);
+    if (!this.size) { this.size = suite.size(); }
+    this.gui.updateStatus('Started suite ' + suite);
   }
   
   function stopSuite(suite) {
-    this.updateStatus('Completed suite ' + suite + '.');
+    _super.stopSuite.call(this, suite);
+    this.gui.updateStatus('Completed suite ' + suite);
   }
   
   function start(t0) {
     _super.start.call(this, t0);
-    this.gui = new WebGUI(document);
-    this.gui.build().appendTo(document.body);
-    this.updateResults();
+    var gui = new WebGUI(document);
+    this.gui = gui;
+    document.body.appendChild(gui.build().toElement());
+    gui.updateResults(this);
   }
   
   function stop(t1) {
     _super.stop.call(this, t1);
-    this.updateStatus('Completed tests in ' + ((t1 - this.t0)/1000) + 's.');
+    this.gui.updateStatus('Completed tests in ' + ((t1 - this.t0)/1000) + 's');
   }
   
-  function updateResults() {
-    this.gui.results.update(this + '.');
-  }
-  
-  function updateStatus(txt) {
-    this.gui.status.update(txt);
-  }
-  
-  function updateProgressBar() {
-    this.gui.progressBar.update(this.testCount/this.size);
-  }
-  
-  function setLevel(level) {
-    this.gui.progressBar.setLevel(level);
-    this.gui.testcase.setLevel(level);
-  }
-  
-  p.updateResults = updateResults;
-  p.updateStatus  = updateStatus;
-  p.updateProgressBar = updateProgressBar;
-  p.setLevel      = setLevel;
   p.addAssertion  = addAssertion;
   p.addSkip       = addSkip;
   p.addFailure    = addFailure;

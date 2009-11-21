@@ -29,6 +29,11 @@ List.displayName = 'List';
     return this;
   }
   
+  function updateResults(results) {
+    this.element.childNodes[1].innerHTML = results;
+    return this;
+  }
+  
   function setLevel(level) {
     if (level > this.level) {
       this.element.className = 'suite ' + (Logger.LEVELS[level] || '').toLowerCase();;
@@ -43,9 +48,10 @@ List.displayName = 'List';
     }
   }
   
-  var TEMPLATE = '<h3><label><input type="checkbox" /> {{ name }}</label></h3><ul style="display: none;"></ul>';
+  var TEMPLATE = '<h3><label><input type="checkbox" /> {{ name }}</label></h3><div></div><ul style="display: none;"></ul>';
   
   p.build = build;
+  p.updateResults = updateResults;
   p.setLevel = setLevel;
   p.appendTo = appendTo;
   p.appendChild = appendChild;

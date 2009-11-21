@@ -20,6 +20,11 @@ ListElement.displayName = 'ListElement';
     return this;
   }
   
+  function updateResults(results) {
+    this.element.firstChild.lastChild.innerHTML = results;
+    return this;
+  }
+  
   function setLevel(level) {
     if (level > this.level) {
       this.element.className = (Logger.LEVELS[level] || '').toLowerCase();;
@@ -31,9 +36,10 @@ ListElement.displayName = 'ListElement';
     this.parent.setLevel(level);
   }
   
-  var TEMPLATE = '<label><input type="checkbox" /> {{ name }}</label>';
+  var TEMPLATE = '<label><input type="checkbox" /> {{ name }} <span></span></label>';
   
   p.build = build;
+  p.updateResults = updateResults;
   p.setLevel = setLevel;
   p.appendTo = appendTo;
 })(ListElement.prototype);
