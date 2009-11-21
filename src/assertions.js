@@ -7,9 +7,6 @@ Evidence.AssertionMessage = AssertionMessage;
 
 var Assertions = (function() {
   function _assertExpression(expression, message, template) {
-    /*for (var i=0; i < 100000; i++) {
-      (function(){})()
-    }*/
     if (expression) {
       this.addAssertion();
     } else {
