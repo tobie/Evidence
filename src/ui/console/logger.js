@@ -34,6 +34,16 @@ Logger.NOTSET   = 0;
     this.log(Logger.DEBUG, template, params);
   }
   
+  function group(title) {
+    this.prefix += '    ';
+    //global.console.group(title);
+  }
+  
+  function groupEnd() {
+    //global.console.groupEnd();
+    this.prefix = this.prefix.substr(0, this.prefix.length - 4);
+  }
+  
   function log(level, template, params) {
     level = level || Logger.NOTSET;
     var c = global.console;
@@ -41,7 +51,7 @@ Logger.NOTSET   = 0;
     var method = Logger.LEVELS[level].toLowerCase();
     if (method === 'critical') { method = 'error'; }
     method = (method in c) ? method : 'log';
-    
+    template = this.prefix + template;
     if (level >= this.level) {
       if (params) {
         params = params.slice(0);
@@ -53,6 +63,9 @@ Logger.NOTSET   = 0;
     }
   }
   
+  p.prefix   = '';
+  p.group    = group;
+  p.groupEnd = groupEnd;
   p.log      = log;
   p.critical = critical;
   p.error    = error;

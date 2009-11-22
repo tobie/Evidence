@@ -47,19 +47,23 @@ ConsoleTestResult.displayName = 'ConsoleTestResult';
   
   function startSuite(suite) {
     this.logger.info('Started suite ' + suite + '.');
+    this.logger.group('Suite ' + suite);
   }
   
   function stopSuite(suite) {
+    this.logger.groupEnd();
     this.logger.info('Completed suite ' + suite + '.');
   }
   
   function start(t0) {
     _super.start.call(this, t0);
     this.logger.info('Started tests.');
+    this.logger.group('Tests');
   }
   
   function stop(t1) {
     _super.stop.call(this, t1);
+    this.logger.groupEnd();
     this.logger.info('Completed tests in ' + ((t1 - this.t0)/1000) + 's.');
     this.logger.info(this.toString() + '.');
   }

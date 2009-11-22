@@ -10,9 +10,9 @@ CommandLineLogger.displayName = 'CommandLineLogger';
   function log(level, msg, params) {
     level = level || Logger.NOTSET;
     if (level >= this.level) {
-      var prefix = '';
+      var prefix = this.prefix;
       if (level > Logger.INFO) {
-        prefix = Logger.LEVELS[level]+ ': ';
+        prefix += Logger.LEVELS[level]+ ': ';
       }
       if (params) {
         msg = UI.printf(msg, params);
