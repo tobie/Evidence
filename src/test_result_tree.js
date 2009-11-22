@@ -11,6 +11,7 @@ function TestResultTree(name) {
   this.name = name;
 }
 
+chain(TestResultTree, TestResult);
 TestResultTree.displayName = 'TestResultTree';
 
 (function(p) {
@@ -55,10 +56,6 @@ TestResultTree.displayName = 'TestResultTree';
   function stopTest(testcase) {
     this.currentNode = this.currentNode.parent || this;
   }
-  
-  function pauseTest(testcase) {}
-  
-  function restartTest(testcase) {}
   
   function startSuite(suite) {
     this.createChildNode(suite.name);
@@ -163,8 +160,6 @@ TestResultTree.displayName = 'TestResultTree';
   p.addError      = addError;
   p.startTest     = startTest;
   p.stopTest      = stopTest;
-  p.pauseTest     = pauseTest;
-  p.restartTest   = restartTest;
   p.startSuite    = startSuite;
   p.stopSuite     = stopSuite;
   p.start         = start;
