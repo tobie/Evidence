@@ -40,7 +40,7 @@ TestResult.displayName = 'TestResult';
   
   function pauseTest(testcase) {}
   
-  function restartTest(testcase) {}
+  function resumeTest(testcase) {}
   
   function startSuite(suite) {}
   
@@ -69,7 +69,7 @@ TestResult.displayName = 'TestResult';
   p.startTest     = startTest;
   p.stopTest      = stopTest;
   p.pauseTest     = pauseTest;
-  p.restartTest   = restartTest;
+  p.resumeTest    = resumeTest;
   p.startSuite    = startSuite;
   p.stopSuite     = stopSuite;
   p.start         = start;

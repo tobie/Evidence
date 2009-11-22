@@ -53,8 +53,8 @@ WebTestResult.displayName = 'WebTestResult';
     this.gui.updateStatus('Paused testcase ' + testcase + '...');
   }
   
-  function restartTest(testcase) {
-    this.gui.updateStatus('Restarted testcase ' + testcase);
+  function resumeTest(testcase) {
+    this.gui.updateStatus('Resumed testcase ' + testcase);
   }
   
   function startSuite(suite) {
@@ -88,7 +88,7 @@ WebTestResult.displayName = 'WebTestResult';
   p.startTest     = startTest;
   p.stopTest      = stopTest;
   p.pauseTest     = pauseTest;
-  p.restartTest   = restartTest;
+  p.resumeTest    = resumeTest;
   p.startSuite    = startSuite;
   p.stopSuite     = stopSuite;
   p.start         = start;
