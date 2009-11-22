@@ -40,12 +40,12 @@ function TestCase(methodName) {
 (function(p) {
   function run(result) {
     this._result = result;
-    defer(this._run, this);
+    defer(this.next, this);
   }
-  function _run() {
+  function next() {
     try {
       if (this._nextAssertions) {
-        this._result.restartTest(this);
+        this._result.resumeTest(this);
         this._nextAssertions(this);
       } else {
         /*this._globalProperties = objectKeys(global);*/
@@ -103,7 +103,7 @@ function TestCase(methodName) {
       this._paused = false;
       global.clearTimeout(this._timeoutId);
       if (assertions) { this._nextAssertions = assertions; }
-      this._run();
+      this.next();
     }
   }
   
@@ -120,7 +120,7 @@ function TestCase(methodName) {
   }
   
   p.run              = run;
-  p._run             = _run;
+  p.next             = next;
   p.addAssertion     = addAssertion;
   p._filterException = _filterException;
   p.pause            = pause;
