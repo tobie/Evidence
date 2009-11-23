@@ -45,7 +45,7 @@ WebTestResult.displayName = 'WebTestResult';
   function stopTest(testcase) {
     _super.stopTest.call(this, testcase);
     var gui = this.gui;
-    gui.updateProgressBar(this.testCount / this.size);
+    gui.updateProgressBar(this.getRatio());
     gui.updateStatus('Completed testcase ' + testcase);
   }
   
@@ -68,6 +68,26 @@ WebTestResult.displayName = 'WebTestResult';
     this.gui.updateStatus('Completed suite ' + suite);
   }
   
+  function loadPage(page) {
+    this.gui.updateStatus('Loading page ' + page.location.pathname + '...');
+  }
+  
+  function startPage(page, suite) {
+    this.pageSize = suite.size();
+    if (!this.pageCount) { this.pageCount = 0; }
+    this.pageCount++;
+    this.previousTestCount = this.testCount;
+    this.gui.updateStatus('Loaded page ' + page.location.pathname);
+  }
+  
+  function getRatio() {
+    if (!this.pageSize) {
+      return this.testCount / this.size;
+    }
+    var pageRatio = (this.testCount - this.previousTestCount) / this.pageSize;
+    return (pageRatio + this.pageCount - 1) / this.size;
+  }
+  
   function start(t0) {
     _super.start.call(this, t0);
     var gui = new WebGUI(document);
@@ -81,6 +101,7 @@ WebTestResult.displayName = 'WebTestResult';
     this.gui.updateStatus('Completed tests in ' + ((t1 - this.t0)/1000) + 's');
   }
   
+  p.getRatio      = getRatio;
   p.addAssertion  = addAssertion;
   p.addSkip       = addSkip;
   p.addFailure    = addFailure;
@@ -91,6 +112,8 @@ WebTestResult.displayName = 'WebTestResult';
   p.resumeTest    = resumeTest;
   p.startSuite    = startSuite;
   p.stopSuite     = stopSuite;
+  p.loadPage      = loadPage;
+  p.startPage     = startPage;
   p.start         = start;
   p.stop          = stop;
 })(WebTestResult.prototype);

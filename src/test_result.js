@@ -46,6 +46,10 @@ TestResult.displayName = 'TestResult';
   
   function stopSuite(suite) {}
   
+  function loadPage(win) {}
+  
+  function startPage(win, suite) {}
+  
   function start(t0) {
     this.t0 = t0;
   }
@@ -72,6 +76,8 @@ TestResult.displayName = 'TestResult';
   p.resumeTest    = resumeTest;
   p.startSuite    = startSuite;
   p.stopSuite     = stopSuite;
+  p.loadPage      = loadPage;
+  p.startPage     = startPage;
   p.start         = start;
   p.stop          = stop;
   p.toString      = toString;
