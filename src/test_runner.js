@@ -5,7 +5,6 @@ TestRunner.displayName = 'TestRunner';
 
 (function(p) {
   function run(suite) {
-    suite.parent = null;
     var result = this._makeResult();
     result.start(new Date());
     suite.run(result);
