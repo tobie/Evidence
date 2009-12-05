@@ -9,45 +9,41 @@ function TestSuite(name, tests) {
 TestSuite.displayName = 'TestSuite';
 
 (function(p) {
-  function run(result) {
+  function run(result, callback) {
     this._index = 0;
-    this._result = result;
+    this._callback = callback || function() {};
     result.startSuite(this);
-    this.next();
+    this.next(result);
     return result;
   }
   
-  function next() {
-    var next = this._tests[this._index];
+  function next(result) {
+    var self = this,
+        next = self._tests[self._index];
     if (next) {
-      this._index++;
-      next.run(this._result);
+      self._index++;
+      next.run(result, function(result) { 
+        self.next(result);
+      });
     } else {
-      this._result.stopSuite(this);
-      if (this.parent) {
-        this.parent.next();
-      } else {
-        this._result.stop(new Date());
-      }
+      result.stopSuite(self);
+      self._callback(result);
     }
   }
   
   function push() {
     for (var i = 0, length = arguments.length; i < length; i++) {
-      var test = arguments[i];
-      test.parent = this;
-      this._tests.push(test);
+      this._tests.push(arguments[i]);
     }
   }
   
   function addTest(test) {
-    test.parent = this;
     this._tests.push(test);
   }
   
   function addTests(tests) {
     for (var i = 0, length = tests.length; i < length; i++) {
-      this.addTest(tests[i]);
+      this._tests.push(tests[i]);
     }
   }
   
@@ -69,6 +65,7 @@ TestSuite.displayName = 'TestSuite';
   function toString() {
     return this.name;
   }
+  
   p.run  = run;
   p.next = next;
   p.push = push;

@@ -42,7 +42,6 @@ function AutoRunner() {
         suite = defaultLoader.loadRegisteredTestCases();
     if (suite._tests.length <= 1) {
       suite = suite._tests[0];
-      suite.parent = null;
     }
     return runner.run(suite);
   }
