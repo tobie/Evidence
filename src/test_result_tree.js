@@ -1,13 +1,13 @@
 function TestResultTree(name) {
-  this.testCount      = 0;
+  this.testCount = 0;
   this.assertionCount = 0;
-  this.skipCount      = 0;
-  this.skips          = [];
-  this.failureCount   = 0;
-  this.failures       = [];
-  this.errors         = [];
-  this.errorCount     = 0;
-  this.testCount      = 0;
+  this.skipCount = 0;
+  this.skips = [];
+  this.failureCount = 0;
+  this.failures = [];
+  this.errors = [];
+  this.errorCount = 0;
+  this.testCount = 0;
   this.name = name;
 }
 
@@ -65,14 +65,14 @@ TestResultTree.displayName = 'TestResultTree';
     this.currentNode = this.currentNode.parent || this;
   }
   
-  function start(t0) {
-    this.t0 = t0;
+  function start() {
+    this.t0 = new Date();
     this.currentNode = this;
   }
   
-  function stop(t1) {
-    this.t1 = t1;
+  function stop() {
     this.currentNode = null;
+    this.t1 = new Date();
   }
   
   function toString() {

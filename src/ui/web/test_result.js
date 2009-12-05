@@ -1,5 +1,6 @@
 function WebTestResult(name) {
   TestResultTree.call(this, name);
+  this.pageCount = 0;
 }
 
 chain(WebTestResult, TestResultTree);
@@ -74,10 +75,13 @@ WebTestResult.displayName = 'WebTestResult';
   
   function startPage(page, suite) {
     this.pageSize = suite.size();
-    if (!this.pageCount) { this.pageCount = 0; }
-    this.pageCount++;
     this.previousTestCount = this.testCount;
     this.gui.updateStatus('Loaded page ' + page.location.pathname);
+  }
+  
+  function stopPage(page) {
+    this.pageCount++;
+    this.gui.updateStatus('Finished page ' + page.location.pathname);
   }
   
   function getRatio() {
@@ -85,20 +89,23 @@ WebTestResult.displayName = 'WebTestResult';
       return this.testCount / this.size;
     }
     var pageRatio = (this.testCount - this.previousTestCount) / this.pageSize;
-    return (pageRatio + this.pageCount - 1) / this.size;
+    return (pageRatio + this.pageCount) / this.size;
   }
   
-  function start(t0) {
-    _super.start.call(this, t0);
+  function start() {
+    _super.start.call(this);
     var gui = new WebGUI(document);
     this.gui = gui;
     document.body.appendChild(gui.build().toElement());
     gui.updateResults(this);
   }
   
-  function stop(t1) {
-    _super.stop.call(this, t1);
-    this.gui.updateStatus('Completed tests in ' + ((t1 - this.t0)/1000) + 's');
+  function stop() {
+    _super.stop.call(this);
+    this.gui.updateStatus('Completed tests in ' + ((this.t1 - this.t0)/1000) + 's');
+
+    var builder = new AsciiViewBuilder();
+    console.log(builder.build(this))
   }
   
   p.getRatio      = getRatio;
@@ -114,6 +121,7 @@ WebTestResult.displayName = 'WebTestResult';
   p.stopSuite     = stopSuite;
   p.loadPage      = loadPage;
   p.startPage     = startPage;
+  p.stopPage      = stopPage;
   p.start         = start;
   p.stop          = stop;
 })(WebTestResult.prototype);
