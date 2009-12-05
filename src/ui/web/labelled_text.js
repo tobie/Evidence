@@ -8,14 +8,19 @@ chain(LabelledText, AbstractWidget);
 LabelledText.displayName = 'LabelledText';
 
 (function(p) {
-  function update(content) {
-    content = this.escapeHTML(content);
-    content = TEMPLATE.replace('{{ label }}', this.label).replace('{{ content }}', content);
-    defer(function() { this.element.innerHTML = content; }, this);
+  function setContent(content) {
+    this._content = this.escapeHTML(content);
+    this._content = TEMPLATE.replace('{{ label }}', this.label).replace('{{ content }}', content);
+    return this;
+  }
+  
+  function draw() {
+    this.element.innerHTML = this._content;
     return this;
   }
   
   var TEMPLATE =  '<strong>{{ label }}:</strong> {{ content }}';
   
-  p.update = update;
+  p.setContent = setContent;
+  p.draw = draw;
 })(LabelledText.prototype);

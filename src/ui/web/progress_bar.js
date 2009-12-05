@@ -1,47 +1,51 @@
 function ProgressBar(width, doc) {
-  this.width = width;
-  this.level = 0;
+  this._width = width;
+  this._level = 0;
   AbstractWidget.call(this, doc);
-  this.build();
+  this._build();
 }
 
 chain(ProgressBar, AbstractWidget);
 ProgressBar.displayName = 'ProgressBar';
 
 (function(p) {
-  function build() {
-    this.element = this.createDiv(this.width);
+  function _build() {
+    this.element = this._createDiv(this.width);
     this.element.id = 'evidence_progress_bar_container';
-    this.progressBar = this.createDiv(0);
+    this.progressBar = this._createDiv(0);
     this.progressBar.id = 'evidence_progress_bar';
     this.element.appendChild(this.progressBar);
     return this;
   }
   
-  function createDiv(width) {
+  function _createDiv(width) {
     var element = this.doc.createElement('div');
     element.style.width = width + 'px';
     return element;
   }
   
-  function update(ratio) {
-    var value = Math.floor(ratio * this.width);
-    defer(function() {
-      this.progressBar.style.width = value + 'px';
-    }, this);
+  function draw() {
+    this.progressBar.style.width = this._value + 'px';
+    var className = (Logger.LEVELS[this._level] || '').toLowerCase();
+    this.progressBar.className = className;
+    return this;
+  }
+  
+  function setValue(ratio) {
+    this._value = Math.floor(ratio * this._width);
     return this;
   }
   
   function setLevel(level) {
-    if (level > this.level) {
-      this.level = level;
-      this.progressBar.className = (Logger.LEVELS[level] || '').toLowerCase();
+    if (level > this._level) {
+      this._level = level;
     }
     return this;
   }
   
-  p.build = build;
-  p.createDiv = createDiv;
-  p.update = update;
+  p._build = _build;
+  p._createDiv = _createDiv;
+  p.draw = draw;
+  p.setValue = setValue;
   p.setLevel = setLevel;
 })(ProgressBar.prototype);

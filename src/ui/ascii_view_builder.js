@@ -1,18 +1,24 @@
-function AsciiViewBuilder() {
+function AsciiViewBuilder(result) {
   this.prefix = '';
+  this._result = result;
 }
 
 AsciiViewBuilder.name = AsciiViewBuilder.displayName = 'AsciiViewBuilder';
 
 (function(p) {
-  function build(r) {
-     var resultString = r.toString(),
-         max = 100 - resultString.length - this.prefix.length,
+  
+  function draw() {
+     return this._build(this._result);
+  }
+  
+  function _build(r) {
+     var rString = r.toString(),
+         max = 100 - rString.length - this.prefix.length,
          str = r.name || 'Anonymous TestSuite';
          
      str = this._truncate(str, max);
      str += ' ' + this._times('.', max - str.length) + ' ';
-     str += resultString;
+     str += rString;
      str += this._displayStatus(r)
      str += '\n';
      
@@ -32,7 +38,7 @@ AsciiViewBuilder.name = AsciiViewBuilder.displayName = 'AsciiViewBuilder';
     var str, original = this.prefix;
     suffix = suffix || '';
     this.prefix += modifier;
-    str = original + prefix + this.build(child) + suffix;
+    str = original + prefix + this._build(child) + suffix;
     this.prefix = original;
     return str;
   }
@@ -59,7 +65,8 @@ AsciiViewBuilder.name = AsciiViewBuilder.displayName = 'AsciiViewBuilder';
     return '';
   }
   
-  p.build = build;
+  p.draw = draw;
+  p._build = _build;
   p._buildChild = _buildChild;
   p._displayStatus = _displayStatus;
   p._times = _times;

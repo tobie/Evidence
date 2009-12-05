@@ -18,7 +18,8 @@ AbstractWidget.displayName = 'Widget';
     this.element.appendChild(element);
     return child;
   }
-  
+  p.draw = function() { return this; };
+  p.redraw = function() { return this.draw() };
   p.appendChild = appendChild;
   p.escapeHTML = escapeHTML;
   p.toElement = toElement;

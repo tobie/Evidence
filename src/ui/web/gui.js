@@ -1,36 +1,45 @@
 function WebGUI(doc) {
   AbstractWidget.call(this, doc);
+  this._build();
 }
 
 chain(WebGUI, AbstractWidget);
 WebGUI.displayName = 'WebGUI';
 
 (function(p) {
-  function build() {
+  function _build() {
     this.element = this.doc.createElement('div');
     this.element.id = 'evidence';
-    this.appendChild(new LabelledText('User agent string').update(global.navigator.userAgent))
-    this.status      = this.appendChild(new LabelledText('Status').update('Idle.'));
+    this.appendChild(new LabelledText('User agent string').setContent(global.navigator.userAgent).draw())
+    this.status      = this.appendChild(new LabelledText('Status'));
     this.progressBar = this.appendChild(new ProgressBar(300));
     this.results     = this.appendChild(new LabelledText('Results'));
     return this;
   }
   
+  function draw() {
+    defer(function() {
+      this.status.draw();
+      this.progressBar.draw();
+      this.results.draw();
+    }, this);
+  }
   
-  function updateResults(txt) {
-    txt = this.appendFullStop(txt);
-    this.results.update(txt);
+  function setResults(txt) {
+    txt = this._appendFullStop(txt);
+    this.results.setContent(txt);
     return this;
   }
   
-  function updateStatus(txt) {
-    txt = this.appendFullStop(txt);
-    this.status.update(txt);
+  function setStatus(txt) {
+    txt = this._appendFullStop(txt);
+    this.status.setContent(txt);
+    this.draw();
     return this;
   }
   
-  function updateProgressBar(ratio) {
-    this.progressBar.update(ratio);
+  function setProgress(ratio) {
+    this.progressBar.setValue(ratio);
     return this;
   }
   
@@ -39,14 +48,15 @@ WebGUI.displayName = 'WebGUI';
     return this;
   }
   
-  function appendFullStop(txt) {
+  function _appendFullStop(txt) {
     return (txt + '').replace(/\.?\s*$/, '.');
   }
   
-  p.build = build;
-  p.updateResults = updateResults;
-  p.updateStatus = updateStatus;
-  p.updateProgressBar = updateProgressBar;
+  p._build = _build;
+  p.setResults = setResults;
+  p.setStatus = setStatus;
+  p.setProgress = setProgress;
   p.setLevel = setLevel;
-  p.appendFullStop = appendFullStop;
+  p._appendFullStop = _appendFullStop;
+  p.draw = draw;
 })(WebGUI.prototype);
