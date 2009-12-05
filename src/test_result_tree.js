@@ -101,68 +101,17 @@ TestResultTree.displayName = 'TestResultTree';
     child.parent = this;
   }
   
-  function toASCIITree(prefix) {
-    var str     = '',
-        results = this.toString(),
-        name    = this.name || 'Test results',
-        childLength = this.children && this.children.length,
-        rest,
-        max;
-    
-    prefix = prefix || '';
-    max = 100 - results.length - prefix.length;
-    max = Math.max(max, 0);
-    
-    if (name.length > max) {
-      name = '...' + name.substr(name.length - max + 3);
-    }
-    
-    rest = (max - name.length);
-    str += name;
-    str += ' ';
-    for (var i = 0; i < rest; i++) { str += '_'; }
-    str += ' ';
-    str += results;
-    
-    if (this.errorCount > 0) {
-      str += ' E';
-    } else if (this.failureCount > 0) {
-      str += ' F';
-    } else if (this.skipCount > 0) {
-      str += ' S';
-    }
-    
-    str += '\n';
-    
-    if (childLength) {
-      for (var i = 0; i < childLength; i++) {
-        str += prefix;
-        if (i == childLength - 1) { // last
-          str += '\'-- ';
-          str += this.children[i].toASCIITree(prefix + '    ');
-          str += prefix;
-          str += '\n';
-        } else {
-          str += '|-- ';
-          str += this.children[i].toASCIITree(prefix + '|   ');
-        }
-      }
-    }
-    return str;
-  }
-  
-  p.toASCIITree   = toASCIITree;
   p.createChildNode = createChildNode;
-  p.appendChild   = appendChild;
-  p.addAssertion  = addAssertion;
-  p.addSkip       = addSkip;
-  p.addFailure    = addFailure;
-  p.addError      = addError;
-  p.startTest     = startTest;
-  p.stopTest      = stopTest;
-  p.startSuite    = startSuite;
-  p.stopSuite     = stopSuite;
-  p.start         = start;
-  p.stop          = stop;
-  p.toString      = toString;
+  p.appendChild = appendChild;
+  p.addAssertion = addAssertion;
+  p.addSkip = addSkip;
+  p.addFailure = addFailure;
+  p.addError = addError;
+  p.startTest = startTest;
+  p.stopTest = stopTest;
+  p.startSuite = startSuite;
+  p.stopSuite = stopSuite;
+  p.start = start;
+  p.stop = stop;
+  p.toString = toString;
 })(TestResultTree.prototype);

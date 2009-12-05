@@ -1,5 +1,7 @@
 //= require "ui/console"
 //= require "ui/web"
+//= require "ui/ascii_view_builder"
+
 var UI = (function() {
   function printf(template, args, inspector) {
     var parts = [],
